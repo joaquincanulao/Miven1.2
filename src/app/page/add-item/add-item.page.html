@@ -1,0 +1,27 @@
+<ion-header>
+  <ion-buttons slot="start">
+    <ion-menu-button></ion-menu-button>
+      <ion-toolbar>
+        <ion-title>Agregar Item</ion-title>
+      </ion-toolbar>
+  </ion-buttons>
+</ion-header>
+
+<ion-content>
+  <ion-item>
+    <ion-label position="floating">Nombre del Artículo</ion-label>
+    <ion-input [(ngModel)]="name"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="floating">Cantidad</ion-label>
+    <ion-input type="number" [(ngModel)]="quantity"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="floating">Fecha de Caducidad</ion-label>
+    <ion-datetime displayFormat="YYYY-MM-DD" pickerFormat="YYYY-MM-DD" [(ngModel)]="expirationDate"></ion-datetime>
+  </ion-item>
+
+  <ion-button expand="full" (click)="onAddItem()">Agregar al Inventario</ion-button>
+</ion-content>

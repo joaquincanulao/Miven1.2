@@ -3,24 +3,38 @@
     <ion-menu contentId="main-content" type="overlay">
       <ion-content>
         <ion-list id="inbox-list">
-          <ion-list-header>Inbox</ion-list-header>
-          <ion-note>hi&#64;ionicframework.com</ion-note>
+          <ion-list-header>Miven</ion-list-header>
+          <ion-note>V.1</ion-note>
+          <ng-template ngFor let-i="index" let-p [ngForOf]="appPages">
 
-          <ion-menu-toggle auto-hide="false" *ngFor="let p of appPages; let i = index">
-            <ion-item routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false" routerLinkActive="selected">
-              <ion-icon aria-hidden="true" slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
-              <ion-label>{{ p.title }}</ion-label>
-            </ion-item>
-          </ion-menu-toggle>
-        </ion-list>
+            <ng-template [ngIf]="p.items?.length > 0" [ngIfElse]="sinItems">
+              
+              <ion-accordion-group value="{{p.title}}">
+                <ion-accordion value="{{p.title}}" toggle-icon="arrow-down-circle">
+                  <ion-item slot="header">
+                    <ion-label>{{p.title}}</ion-label>
+                  </ion-item>
+      
+                  <ion-list id="inbox-list" slot="content" >
+                    <ion-menu-toggle auto-hide="false" *ngFor="let sp of p.items; let i = index">
+                      <ion-item routerDirection="root" [routerLink]="[sp.url]" lines="none" detail="false"
+                      routerLinkActive="selected">
+                      <ion-icon slot="start" [ios]="p.icon + '-outline'" [md]="sp.icon + '-sharp'"></ion-icon>
+                      <ion-label>{{ sp.title }}</ion-label>
+                    </ion-item>
+                    </ion-menu-toggle>
+                  </ion-list>
+                </ion-accordion>
+              </ion-accordion-group>
 
-        <ion-list id="labels-list">
-          <ion-list-header>Labels</ion-list-header>
-
-          <ion-item *ngFor="let label of labels" lines="none">
-            <ion-icon aria-hidden="true" slot="start" ios="bookmark-outline" md="bookmark-sharp"></ion-icon>
-            <ion-label>{{ label }}</ion-label>
-          </ion-item>
+            </ng-template>
+            <ng-template #sinItems>
+              <ion-item routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false" routerLinkActive="selected">
+                <ion-icon aria-hidden="true" slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
+                <ion-label>{{ p.title }}</ion-label>
+              </ion-item>               
+            </ng-template>
+        </ng-template>
         </ion-list>
       </ion-content>
     </ion-menu>
