@@ -112,4 +112,13 @@ export class AuthService {
   getCurrentUser() {
     return this.auth.currentUser;
   }
+  
+  getUserData(uid: string) {
+return this.firestore.collection('usuarios').doc(uid).valueChanges();
+  }
+
+  getInfoUser() {
+    return this.auth.authState;
+
+  }
 }

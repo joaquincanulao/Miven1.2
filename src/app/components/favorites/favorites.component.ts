@@ -152,6 +152,10 @@ export class FavoritesComponent implements OnInit {
     }
   }
 
+
   
+  isFavorite(recipeId: string): boolean {
+    return this.favorites.some(fav => fav.recipeId === recipeId);
+  }
 
 }

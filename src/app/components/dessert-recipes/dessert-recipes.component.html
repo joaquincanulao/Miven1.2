@@ -8,12 +8,13 @@
 </ion-header>
 
 <ion-content>
+  <ion-searchbar placeholder="Buscar receta" (ionInput)="onSearch($event)"></ion-searchbar>
+
   <ion-list>
-    <!-- Iterar sobre cada receta -->
-    <ion-card *ngFor="let recipe of dessertRecipes" (click)="openRecipeModal(recipe)">
+     
+    <ion-card *ngFor="let recipe of filterdessert" (click)="openRecipeModal(recipe)">
       <ion-img *ngIf="recipe.imageUrl" [src]="recipe.imageUrl" alt="Imagen de la receta"></ion-img>
 
-      <!-- Estrellas de calificación -->
       <div class="star-rating">
         <ion-icon *ngFor="let star of [1, 2, 3, 4, 5]" [name]="star <= recipe.calificacionPromedio ? 'star' : 'star-outline'"></ion-icon>
       </div>
@@ -25,10 +26,8 @@
       <ion-card-content>
         {{ recipe.descripcion | slice:0:100 }}...
         
-        <!-- Botón para ver más detalles -->
         <ion-button fill="clear" (click)="openRecipeModal(recipe)">Ver más</ion-button>
         
-        <!-- Botón para eliminar la receta, visible solo para el creador de la receta -->
         <ion-button *ngIf="recipe.creadorId === userId" (click)="deleteRecipe(recipe.id)" color="danger">
           Eliminar
         </ion-button>
@@ -61,11 +60,13 @@
 
           <!-- Mostrar ingredientes y si están en el inventario o no -->
            
-          <ion-item *ngFor="let ingredient of availableIngredients">
-            {{ ingredient.name }}
-            <ion-icon *ngIf="ingredient.inInventory" name="checkmark-circle" color="success"></ion-icon>
-            <ion-icon *ngIf="!ingredient.inInventory" name="close-circle" color="danger"></ion-icon>
-           </ion-item>
+          <ion-item *ngFor="let ing of availableIngredients">
+            <ion-label>
+              {{ ing.nombre }} - {{ ing.cantidad }} {{ ing.unidad }}
+              <span *ngIf="ing.disponible" style="color: green;">Disponible</span>
+              <span *ngIf="!ing.disponible" style="color: red;">No disponible</span>
+            </ion-label>
+          </ion-item>
 
            <ion-item>
            <ion-label>

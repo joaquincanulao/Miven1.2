@@ -3,12 +3,19 @@
    <ion-buttons slot="start">
      <ion-menu-button></ion-menu-button>
    <ion-title>Agregar Item</ion-title>
+   <ion-item>
+    <ion-button expand="block" (click)="openCamera()">Capturar Imagen</ion-button>
+  </ion-item>
    </ion-buttons>
  </ion-toolbar>
 </ion-header>
 
 
 <ion-content>
+  <div *ngIf="capturedImage">
+    <h3>Imagen Capturada:</h3>
+    <img [src]="capturedImage" alt="Imagen Capturada" style="width: 100%; height: auto; margin-top: 10px;" />
+  </div>
   <ion-item>
     <ion-label position="floating">Selecciona un producto</ion-label>
     <ion-select (ionChange)="onItemSelected($event)" placeholder="Selecciona o agrega un ítem">
@@ -27,9 +34,14 @@
     <ion-input type="number" [(ngModel)]="newItem.cantidad"></ion-input>
   </ion-item>
 
+
   <ion-item>
-    <ion-label position="floating">Unidad de Medida</ion-label>
-    <ion-input [(ngModel)]="newItem.unidadMedida"></ion-input>
+    <ion-label>Unidad</ion-label>
+    <ion-select [(ngModel)]="newItem.unidadMedida">
+      <ion-select-option value="gramos">Gramos</ion-select-option>
+      <ion-select-option value="ml">Mililitros</ion-select-option>
+      <ion-select-option value="unidad">Unidad</ion-select-option>
+    </ion-select>
   </ion-item>
 
   <ion-item>

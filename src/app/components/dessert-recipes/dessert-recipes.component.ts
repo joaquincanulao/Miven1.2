@@ -11,26 +11,27 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 })
 export class DessertRecipesComponent implements OnInit {
   dessertRecipes: any[] = [];
+  filterdessert: any[] = [];
   isModalOpen = false;
   selectedRecipe: any | null = null;
   userId: string | null = null;
-  availableIngredients: any[] = []; // Para almacenar los ingredientes con su disponibilidad
+  availableIngredients: any[] = [];
   newComment = '';
   newRating = 1;
-  favorites: any[] = []; // Almacenar las recetas favoritas del usuario
+  favorites: any[] = [];
 
   constructor(
     private recipeService: RecipeService, 
     private inventoryService: InventoryService,
     private auth: AngularFireAuth,
-    private firestore: AngularFirestore // Servicio de Firestore
+    private firestore: AngularFirestore
   ) {}
 
   ngOnInit(): void {
     this.auth.user.subscribe(user => {
       if (user) {
         this.userId = user.uid;
-        this.loadFavorites(); // Cargar favoritos existentes
+        this.loadFavorites();
       }
     });
     this.loadDessertRecipes();
@@ -40,10 +41,25 @@ export class DessertRecipesComponent implements OnInit {
   loadDessertRecipes() {
     this.recipeService.getRecipesByCategory('postre').subscribe(recipes => {
       this.dessertRecipes = recipes;
+      this.filterdessert = recipes; // Inicializa el filtro con todas las recetas
     });
   }
 
-  // Abrir modal y cargar los ingredientes y su disponibilidad en el inventario
+  // Método de búsqueda que se ejecuta al escribir en la barra de búsqueda
+  onSearch(event: any) {
+    const searchTerm = event.target.value?.toLowerCase() || '';
+
+    if (!searchTerm) {
+      // Si no hay término de búsqueda, muestra todas las recetas
+      this.filterdessert = this.dessertRecipes;
+    } else {
+      // Filtrar las recetas por título
+      this.filterdessert = this.dessertRecipes.filter(recipe =>
+        recipe.titulo.toLowerCase().includes(searchTerm)
+      );
+    }
+  }
+
   openRecipeModal(recipe: any) {
     this.selectedRecipe = recipe;
     this.checkIngredientsAvailability(recipe.ingredientes);
@@ -58,13 +74,18 @@ export class DessertRecipesComponent implements OnInit {
   }
 
   // Función para verificar los ingredientes disponibles en el inventario
-  checkIngredientsAvailability(recipeIngredients: string[]) {
+  checkIngredientsAvailability(recipeIngredients: { nombre: string; cantidad: number; unidad: string }[]) {
     if (this.userId) {
       this.inventoryService.getInventory(this.userId).subscribe(inventory => {
         this.availableIngredients = recipeIngredients.map(ingredient => {
-          return {
-            name: ingredient,
-            inInventory: inventory.some(item => item.nombre.toLowerCase() === ingredient.toLowerCase())
+          const inventoryItem = inventory.find (
+            item => item.nombre.toLowerCase() === ingredient.nombre.toLowerCase()
+          );
+           return {
+            nombre: ingredient.nombre,
+            cantidad: ingredient.cantidad,
+            unidad: ingredient.unidad,
+            disponible: inventoryItem ? inventoryItem.cantidad >= ingredient.cantidad : false
           };
         });
       });

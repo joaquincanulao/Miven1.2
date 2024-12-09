@@ -24,6 +24,7 @@ import { DessertRecipesComponent } from './components/dessert-recipes/dessert-re
 import { AddItemComponent } from './components/add-item/add-item.component'; // Importa el componente
 import { HttpClientModule } from '@angular/common/http';
 import { FavoritesComponent } from './components/favorites/favorites.component';
+import { SortMenuComponent } from './sort-menu/sort-menu.component';
 
 
 @NgModule({
@@ -35,8 +36,10 @@ import { FavoritesComponent } from './components/favorites/favorites.component';
     DinnerRecipesComponent,
     DessertRecipesComponent,
     AddItemComponent,
-    FavoritesComponent, ], // Añadir AddItemPage a las declaraciones
-  imports: [BrowserModule, 
+    FavoritesComponent,
+    SortMenuComponent,  ], 
+    
+    imports: [BrowserModule, 
             IonicModule.forRoot(),
             AppRoutingModule,
             AngularFireModule.initializeApp(environment.firebaseConfig),
@@ -44,6 +47,7 @@ import { FavoritesComponent } from './components/favorites/favorites.component';
             AngularFireAuthModule,
             AngularFirestoreModule,
             HttpClientModule,],
+
 
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }, 
               provideFirebaseApp(() => initializeApp({"projectId":"miven-c5f93","appId":"1:46504601832:web:ecc2f1c0f13346da7c415d","storageBucket":"miven-c5f93.appspot.com","apiKey":"AIzaSyC7SViDJ3MAfnpzls1znWTVYTvO6S5K1ys","authDomain":"miven-c5f93.firebaseapp.com","messagingSenderId":"46504601832"})),

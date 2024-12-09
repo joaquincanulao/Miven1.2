@@ -30,6 +30,7 @@ export class AppComponent {
         {title: 'Agregar recetas', url: '/add-recipe', icon: 'add'},
       ]
      },
+     { title: 'Perfil', url: '/perfilusuario', icon: 'person' },
     { title: 'Cerrar sesión', url: '/login', icon: 'close' },
   ];
 

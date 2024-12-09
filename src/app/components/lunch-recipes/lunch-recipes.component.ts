@@ -11,6 +11,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 })
 export class LunchRecipesComponent implements OnInit {
   lunchRecipes: any[] = [];
+  filteredlunch: any[] = [];
   isModalOpen = false;
   selectedRecipe: any | null = null;
   userId: string | null = null;
@@ -42,6 +43,19 @@ export class LunchRecipesComponent implements OnInit {
     });
   }
 
+onSearch(event: any) {
+    const searchTerm = event.target.value?.toLowerCase() || '';
+
+    if (!searchTerm) {
+      this.filteredlunch = this.lunchRecipes;
+      } else {
+        this.filteredlunch = this.lunchRecipes.filter(recipe =>
+          recipe.titulo.toLowerCase().includes(searchTerm)
+        );
+      }
+    }
+
+
     openRecipeModal(recipe: any) {
     this.selectedRecipe = recipe;
     this.checkIngredientsAvailability(recipe.ingredientes);
@@ -56,13 +70,18 @@ export class LunchRecipesComponent implements OnInit {
   }
 
   // Función para verificar los ingredientes disponibles en el inventario
-  checkIngredientsAvailability(recipeIngredients: string[]) {
+  checkIngredientsAvailability(recipeIngredients: { nombre: string; cantidad: number; unidad: string }[]) {
     if (this.userId) {
       this.inventoryService.getInventory(this.userId).subscribe(inventory => {
         this.availableIngredients = recipeIngredients.map(ingredient => {
+          const inventoryItem = inventory.find(
+            item => item.nombre.toLowerCase() === ingredient.nombre.toLowerCase()
+          );
           return {
-            name: ingredient,
-            inInventory: inventory.some(item => item.nombre.toLowerCase() === ingredient.toLowerCase())
+            nombre: ingredient.nombre,
+            cantidad: ingredient.cantidad,
+            unidad: ingredient.unidad,
+            disponible: inventoryItem ? inventoryItem.cantidad >= ingredient.cantidad : false
           };
         });
       });

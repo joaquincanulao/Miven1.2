@@ -9,8 +9,13 @@
 
 <ion-content class="ion-padding">
   <div class="welcome-message">
-    <h2>Bienvenido a Miven</h2>
-    <p>
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Bienvenido a Miven</ion-card-title>
+      </ion-card-header>
+    
+    <ion-card-content>
+    <p>  
       Miven es una aplicación que te permite gestionar tu inventario de alimentos y, al mismo tiempo, lo vincula con recetas. 
       Aquí puedes ver recetas de otros usuarios, así como crear tus propias recetas. 
     </p>
@@ -21,5 +26,35 @@
       ¡Explora recetas, gestiona tu inventario y disfruta de una experiencia culinaria conectada con Miven!
     </p>
     <ion-button expand="full" routerLink="/inventory">Gestionar Inventario</ion-button>
+  </ion-card-content>
+</ion-card>
   </div>
+
+  <div class="food-tips-container">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Consejo del Día</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>{{ currentTip || 'Cargando consejo...' }}</p>
+        <ion-button expand="block" (click)="showRandomTip()">Siguiente Consejo</ion-button>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <div class="popular-recipe-container" *ngIf="popularRecipe">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Receta Más Popular</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <h1>{{ popularRecipe.titulo }}</h1>
+        <img [src]="popularRecipe.imageUrl" alt="Imagen de la receta" class="popular-recipe-image">
+        <p>Calificación: {{ popularRecipe.rating }} / 5</p>
+        <ion-button expand="block" routerLink="/recipe/{{ popularRecipe.id }}">Ver Receta</ion-button>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+
 </ion-content>

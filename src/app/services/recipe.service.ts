@@ -5,12 +5,20 @@ import { Observable, combineLatest } from 'rxjs';
 import firebase from 'firebase/compat/app';
 import { switchMap, map } from 'rxjs/operators';
 
+
+interface Ingredient {
+  nombre: string;
+  cantidad: number;
+  unidad: string;
+}
+
 interface Recipe {
   titulo: string;
   descripcion: string;
   categoria: string;
-  ingredientes: string[];
+  ingredientes: Ingredient[]; 
   creadorId: string;
+  imageUrl?: string | null;
   favorita?: boolean;
 }
 
@@ -23,7 +31,7 @@ interface Comment {
 
 interface UserData {
   nombre: string;
-  [key: string]: any;  // Si hay más propiedades en el documento del usuario
+  [key: string]: any; 
 }
 
 @Injectable({

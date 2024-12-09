@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { InventoryService } from '../services/inventory.service';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { PopoverController } from '@ionic/angular';
+import { SortMenuComponent } from '../sort-menu/sort-menu.component';
 
 @Component({
   selector: 'app-inventory',
@@ -9,6 +11,7 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 })
 export class InventoryComponent implements OnInit {
   inventoryItems: any[] = [];
+  sortedInventory: any[] = [];
   expiringItems: any[] = []; // Lista de ítems por vencer
   userId: string | null = null;
   editItemCantidad: number | null = null;  // Nueva cantidad a editar
@@ -16,7 +19,10 @@ export class InventoryComponent implements OnInit {
   isEditModalOpen = false;
 
 
-  constructor(private inventoryService: InventoryService, private auth: AngularFireAuth) {}
+  constructor(private inventoryService: InventoryService, 
+              private auth: AngularFireAuth,
+              private popoverController: PopoverController            
+            ) {}
 
   ngOnInit(): void {
     this.auth.user.subscribe(user => {
@@ -34,9 +40,38 @@ export class InventoryComponent implements OnInit {
     if (this.userId) {
       this.inventoryService.getInventory(this.userId).subscribe(items => {
         this.inventoryItems = items;
+        this.sortInventory('alphabetical'); // Orden inicial
+        });
+    }
+  }
+
+  // Abre el menú de ordenación como popover
+  async openSortMenu(ev: any) {
+    const popover = await this.popoverController.create({
+      component: SortMenuComponent,
+      event: ev,
+      translucent: true
+    });
+
+    await popover.present();
+
+    const { data } = await popover.onDidDismiss();
+    if (data) {
+      this.sortInventory(data); // Ordena según la selección
+    }
+  }
+
+  // Método para ordenar el inventario
+  sortInventory(type: string) {
+    if (type === 'alphabetical') {
+      this.sortedInventory = [...this.inventoryItems].sort((a, b) => a.nombre.localeCompare(b.nombre));
+    } else if (type === 'expiration') {
+      this.sortedInventory = [...this.inventoryItems].sort((a, b) => {
+        return new Date(a.fechaVencimiento).getTime() - new Date(b.fechaVencimiento).getTime();
       });
     }
   }
+
 
   // Solicitar permiso de notificación al usuario
   requestNotificationPermission() {

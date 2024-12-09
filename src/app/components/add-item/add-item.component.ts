@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { InventoryService } from '../../services/inventory.service';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 
 @Component({
   selector: 'app-add-item',
@@ -9,10 +10,10 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
   styleUrls: ['./add-item.component.scss']
 })
 export class AddItemComponent implements OnInit {
-  predefinedItems: string[] = ['Arroz', 'Leche', 'Huevos', 'Pan', 'Queso'];  // Ítems predeterminados
-  availableItems: string[] = [];  // Lista de ítems que estará disponible para todos
+  predefinedItems: string[] = [];
+  availableItems: string[] = [];
   selectedItem: string | null = null;
-  isNewItem: boolean = false;  // Para mostrar el campo de nuevo ítem si es necesario
+  isNewItem: boolean = false;
   newItem: any = {
     nombre: '',
     cantidad: 0,
@@ -20,6 +21,8 @@ export class AddItemComponent implements OnInit {
     unidadMedida: ''
   };
   userId: string | null = null;
+  capturedImage: string | null = null;
+
 
   constructor(private inventoryService: InventoryService, private auth: AngularFireAuth, private firestore: AngularFirestore) {
     this.auth.user.subscribe(user => {
@@ -29,18 +32,33 @@ export class AddItemComponent implements OnInit {
     });
   }
 
+
+
   ngOnInit() {
     this.loadAvailableItems();
   }
 
-  // Cargar los ítems disponibles desde Firestore
+  async openCamera() {
+    try {
+      const image = await Camera.getPhoto({
+        quality: 90,
+        resultType: CameraResultType.Base64,
+        source: CameraSource.Camera,
+      });
+      this.capturedImage = `data:image/jpeg;base64,${image.base64String}`;
+    } catch (error) {
+      console.error('Error al capturar la imagen:', error);
+    }
+  }
+
+
+  // Cargar los ítems disponibles desde Firestore...
   loadAvailableItems() {
     this.firestore.collection('items').valueChanges({ idField: 'id' }).subscribe((items: any[]) => {
       this.availableItems = [...this.predefinedItems, ...items.map(item => item.nombre)];
     });
   }
 
-  // Función para formatear la fecha en DD-MM-YYYY
   formatFechaVencimiento(fecha: string): string {
     const date = new Date(fecha);
     const day = String(date.getDate()).padStart(2, '0');
@@ -50,19 +68,17 @@ export class AddItemComponent implements OnInit {
     return `${day}-${month}-${year}`;
   }
 
-  // Método para manejar la selección de ítems
   onItemSelected(event: any) {
     const selectedItem = event.detail.value;
     if (selectedItem === 'Otro') {
       this.isNewItem = true;
-      this.newItem.nombre = '';  // Limpiar el campo si el usuario elige agregar un nuevo ítem
+      this.newItem.nombre = '';  
     } else {
       this.isNewItem = false;
-      this.newItem.nombre = selectedItem;  // Asignar el ítem seleccionado
+      this.newItem.nombre = selectedItem;  
     }
   }
 
-  // Método para agregar un ítem al inventario
   addItem() {
     if (!this.isNewItem && this.selectedItem) {
       this.newItem.nombre = this.selectedItem;
@@ -75,11 +91,11 @@ export class AddItemComponent implements OnInit {
         nombre: this.newItem.nombre,
         cantidad: this.newItem.cantidad,
         fechaVencimiento: formattedFecha,
-        unidadMedida: this.newItem.unidadMedida
+        unidadMedida: this.newItem.unidadMedida,
+        imageUrl: this.capturedImage // Agregar la imagen capturada
       };
 
       this.inventoryService.addItemToInventory(itemToSave, this.userId).then(() => {
-        // Si es un ítem nuevo, guardarlo en Firestore para que esté disponible para otros usuarios
         if (this.isNewItem) {
           this.addItemToFirestore(this.newItem.nombre);
         }
@@ -95,7 +111,7 @@ export class AddItemComponent implements OnInit {
 
   // Guardar un ítem nuevo en Firestore
   addItemToFirestore(nombre: string) {
-    this.firestore.collection('items').add({ nombre });
+    this.firestore.collection('items').doc(nombre).set({ nombre });
   }
 
   // Método para resetear el formulario
@@ -103,5 +119,6 @@ export class AddItemComponent implements OnInit {
     this.newItem = { nombre: '', cantidad: 0, fechaVencimiento: '', unidadMedida:'' };
     this.selectedItem = null;
     this.isNewItem = false;
+    this.capturedImage = null;
   }
 }

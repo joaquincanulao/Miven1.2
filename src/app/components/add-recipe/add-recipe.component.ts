@@ -5,25 +5,30 @@ import { RecipeService } from '../../services/recipe.service';
 import { InventoryService } from '../../services/inventory.service'; 
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 
+// Define la interfaz Ingredient
+interface Ingredient {
+  nombre: string;
+  cantidad: number;
+  unidad: string;
+}
 
 @Component({
   selector: 'app-add-recipe',
   templateUrl: './add-recipe.component.html',
   styleUrls: ['./add-recipe.component.scss']
 })
-
-
 export class AddRecipeComponent implements OnInit {
   titulo: string = '';
   imageUrl: string | null = null;
   descripcion: string = '';
   categoria: string = 'desayuno';
-  ingredientes: string[] = [];
+  ingredientes: Ingredient[] = []; // Cambiado de string[] a Ingredient[]
   ingrediente: string = '';
+  cantidadIngrediente: number = 1;
+  unidadIngrediente: string = 'unidad'; // Nueva propiedad
   selectedFile: File | null = null;
   imagePreview: string | ArrayBuffer | null = null;
   globalItems: any[] = [];
-  cantidadIngrediente: number = 1;
 
   constructor(
     private recipeService: RecipeService,
@@ -33,25 +38,29 @@ export class AddRecipeComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.loadGlobalItems(); // cargar items globales 
+    this.loadGlobalItems();
   }
 
-  // Método para cargar los ítems globales desde inventario
   loadGlobalItems() {
     this.inventoryService.getGlobalItems().subscribe(items => {
       this.globalItems = items;
     });
   }
 
-  // Método para agregar un nuevo item a la lista
   addIngredient() {
     if (this.ingrediente.trim()) {
-      this.ingredientes.push(this.ingrediente.trim());
+      const nuevoIngrediente: Ingredient = {
+        nombre: this.ingrediente.trim(),
+        cantidad: this.cantidadIngrediente,
+        unidad: this.unidadIngrediente
+      };
+      this.ingredientes.push(nuevoIngrediente);
       this.ingrediente = '';
+      this.cantidadIngrediente = 1;
+      this.unidadIngrediente = 'unidad';
     }
   }
 
-  // Método para agregar la receta a base de datos
   addRecipe() {
     if (this.selectedFile) {
       const filePath = `recipes/${new Date().getTime()}_${this.selectedFile.name}`;
@@ -74,7 +83,6 @@ export class AddRecipeComponent implements OnInit {
     }
   }
 
-  // Método para guardar la receta en Firestore
   saveRecipe() {
     this.auth.user.subscribe(user => {
       if (user) {
@@ -83,11 +91,11 @@ export class AddRecipeComponent implements OnInit {
           imageUrl: this.imageUrl,
           descripcion: this.descripcion,
           categoria: this.categoria,
-          ingredientes: this.ingredientes,
+          ingredientes: this.ingredientes, // Ahora es un array de objetos `Ingredient`
           creadorId: user.uid
         };
         this.recipeService.addRecipe(recipe).then(() => {
-          this.resetForm();
+          
         }).catch(error => {
           console.error('Error al agregar la receta:', error);
         });
@@ -95,24 +103,12 @@ export class AddRecipeComponent implements OnInit {
     });
   }
 
-  // Método para reiniciar el formulario
-  resetForm() {
-    this.titulo = '';
-    this.descripcion = '';
-    this.categoria = 'desayuno';
-    this.ingredientes = [];
-    this.imageUrl = null;
-    this.imagePreview = null;
-    this.selectedFile = null;
-  }
 
-  // Manejar la selección de archivos para subir
   onFileSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file) {
       this.selectedFile = file;
 
-      // Mostrar vista previa de la imagen seleccionada
       const reader = new FileReader();
       reader.onload = () => {
         this.imagePreview = reader.result;
@@ -121,4 +117,3 @@ export class AddRecipeComponent implements OnInit {
     }
   }
 }
-
