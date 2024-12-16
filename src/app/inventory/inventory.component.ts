@@ -211,4 +211,8 @@ async showAlerts() {
     await alert.present();
   }
 }
+processItems(expiredItems: string[], expiringItems: string[]): void {
+  console.log("Expired Items:", expiredItems);
+  console.log("Expiring Items:", expiringItems);
+}
 }

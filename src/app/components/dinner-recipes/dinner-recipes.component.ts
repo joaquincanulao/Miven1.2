@@ -3,6 +3,8 @@ import { RecipeService } from '../../services/recipe.service';
 import { InventoryService } from '../../services/inventory.service'; 
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { Router } from '@angular/router';
+
 
 @Component({
   selector: 'app-dinner-recipes',
@@ -11,59 +13,74 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 })
 export class DinnerRecipesComponent implements OnInit {
   dinnerRecipes: any[] = [];
-  filtereddinner: any[] = [];
+  filteredDinnerRecipes: any[] = [];
   isModalOpen = false;
   selectedRecipe: any | null = null;
   userId: string | null = null;
-  availableIngredients: any[] = []; // Para almacenar los ingredientes con su disponibilidad
+  availableIngredients: any[] = [];
   newComment = '';
-  newRating = 1;
-  favorites: any[] = []; // Almacenar las recetas favoritas del usuario
+  newRating: number = 1;
+  favorites: any[] = [];
 
   constructor(
     private recipeService: RecipeService, 
     private inventoryService: InventoryService,
     private auth: AngularFireAuth,
-    private firestore: AngularFirestore // Servicio de Firestore
+    private firestore: AngularFirestore,
+    private router: Router // Agregar el servicio Router
   ) {}
 
   ngOnInit(): void {
     this.auth.user.subscribe(user => {
       if (user) {
         this.userId = user.uid;
-        this.loadFavorites(); // Cargar favoritos existentes
+        this.loadFavorites();
       }
     });
     this.loadDinnerRecipes();
   }
 
   loadDinnerRecipes() {
-    this.recipeService.getRecipesByCategory('cena').subscribe(recipes => {
-      this.dinnerRecipes = recipes;
-      this.filtereddinner = recipes;
-    });
-  }
+  this.recipeService.getRecipesByCategory('cena').subscribe(recipes => {
+    this.dinnerRecipes = recipes;
+    this.filteredDinnerRecipes = recipes;
 
-onSearch(event: any) {
-  const searchTerm = event.target.value?.toLowerCase() ||'';
-
-  if (!searchTerm) {
-    this.filtereddinner = this.dinnerRecipes;
-  } else {
-    this.filtereddinner = this.dinnerRecipes.filter(recipe =>
-      recipe.titulo.toLowerCase().includes(searchTerm)
+    const ratingPromises = this.dinnerRecipes.map(recipe => 
+      this.loadRecipeRatings(recipe.id).then(averageRating => {
+        recipe.averageRating = averageRating;
+      })
     );
+
+    Promise.all(ratingPromises).then(() => {
+      // Ordenar recetas por calificación promedio
+      this.sortRecipesByRating();
+    });
+  });
+}
+            
+  sortRecipesByRating() {
+    this.filteredDinnerRecipes.sort((a, b) => {
+      return (b.averageRating || 0) - (a.averageRating || 0); 
+      });
   }
 
-}
+  onSearch(event: any) {
+    const searchTerm = event.target.value?.toLowerCase() || '';
+    if (!searchTerm) {
+      this.filteredDinnerRecipes = this.dinnerRecipes;
+    } else {
+      this.filteredDinnerRecipes = this.dinnerRecipes.filter(recipe =>
+        recipe.titulo.toLowerCase().includes(searchTerm)
+      );
+    }
+  }
 
-
-  // Abrir modal y cargar los ingredientes y su disponibilidad en el inventario
   openRecipeModal(recipe: any) {
     this.selectedRecipe = recipe;
     this.checkIngredientsAvailability(recipe.ingredientes);
     this.recipeService.getRecipeCommentsWithUser(recipe.id).subscribe((comments: any[]) => {
-    this.selectedRecipe.comentarios = comments;});
+      this.selectedRecipe.comentarios = comments;
+    });
     this.isModalOpen = true;
   }
 
@@ -72,13 +89,13 @@ onSearch(event: any) {
     this.selectedRecipe = null;
   }
 
-  // Función para verificar los ingredientes disponibles en el inventario
+  // Verificar la disponibilidad de los ingredientes en el inventario
   checkIngredientsAvailability(recipeIngredients: { nombre: string; cantidad: number; unidad: string }[]) {
     if (this.userId) {
       this.inventoryService.getInventory(this.userId).subscribe(inventory => {
         this.availableIngredients = recipeIngredients.map(ingredient => {
-          const inventoryItem = inventory.find(
-            item => item.nombre.toLowerCase() === ingredient.nombre.toLowerCase()
+          const inventoryItem = inventory.find(item => 
+            item?.nombre?.toLowerCase() === ingredient?.nombre?.toLowerCase()
           );
           return {
             nombre: ingredient.nombre,
@@ -91,7 +108,10 @@ onSearch(event: any) {
     }
   }
 
-  // Función para enviar comentario y calificación
+  rateRecipe(rating: number) {
+    this.newRating = rating; 
+  }
+
   submitComment() {
     if (this.selectedRecipe && this.userId && this.newComment.trim()) {
       this.recipeService.addCommentWithRating(
@@ -112,7 +132,22 @@ onSearch(event: any) {
     }
   }
 
-  // Método para eliminar una receta
+  loadRecipeRatings(recipeId: string): Promise<number> {
+    return new Promise((resolve) => {
+      this.firestore.collection('recetas').doc(recipeId).collection('comentarios')
+        .valueChanges().subscribe((comments: any[]) => {
+          if (comments.length > 0) {
+            const totalRating = comments.reduce((acc, comment) => acc + comment.rating, 0);
+            const averageRating = totalRating / comments.length;
+            resolve(averageRating);
+          } else {
+            resolve(0); // Sin calificaciones
+          }
+        });
+    });
+  }
+
+
   deleteRecipe(recipeId: string) {
     if (confirm('¿Estás seguro de que deseas eliminar esta receta?')) {
       this.recipeService.deleteRecipe(recipeId).then(() => {
@@ -123,33 +158,44 @@ onSearch(event: any) {
       });
     }
   }
-// Método para cargar las recetas que ya están en favoritos
-loadFavorites() {
-  if (!this.userId) return;
 
-  this.firestore
-    .collection('usuarios')
-    .doc(this.userId)
-    .collection('favoritos')
-    .valueChanges()
-    .subscribe(favorites => {
-      this.favorites = favorites;
-    });
-}
-
-addToFavorites(recipeId: string, category: string) {
-  if (this.userId) {
-    const favoriteRecipe = {
-      recipeId: recipeId,
-      category: category, // Guardar la categoría
-      userId: this.userId
-    };
-    this.firestore.collection('usuarios').doc(this.userId).collection('favoritos').add(favoriteRecipe).then(() => {
-      console.log('Receta agregada a favoritos');
-    }).catch(error => {
-      console.error('Error al agregar a favoritos:', error);
-    });
+  loadFavorites() {
+    if (!this.userId) return;
+    this.firestore
+      .collection('usuarios')
+      .doc(this.userId)
+      .collection('favoritos')
+      .valueChanges()
+      .subscribe(favorites => {
+        this.favorites = favorites;
+      });
   }
-}
 
+  addToFavorites(recipeId: string, category: string) {
+    if (this.userId) {
+    if (this.isFavorite(recipeId)) {
+        console.log('La receta ya está en favoritos');
+        return;
+      }
+
+      const favoriteRecipe = {
+        recipeId: recipeId,
+        category: category,
+        userId: this.userId
+      };
+      this.firestore.collection('usuarios').doc(this.userId).collection('favoritos').add(favoriteRecipe).then(() => {
+        console.log('Receta agregada a favoritos');
+      }).catch(error => {
+        console.error('Error al agregar a favoritos:', error);
+      });
+    }
+  }
+  isFavorite(recipeId: string): boolean {
+    return this.favorites.some(fav => fav.recipeId === recipeId);
+  }
+  navigateToEdit(recipeId: string) {
+    // Navegar a la página de edición de recetas
+    this.router.navigate(['/edit-recipe', recipeId]);
+  }
+  
 }

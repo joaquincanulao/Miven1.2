@@ -25,6 +25,8 @@ import { AddItemComponent } from './components/add-item/add-item.component'; // 
 import { HttpClientModule } from '@angular/common/http';
 import { FavoritesComponent } from './components/favorites/favorites.component';
 import { SortMenuComponent } from './sort-menu/sort-menu.component';
+import { EditRecipeComponent } from './edit-recipe/edit-recipe.component'; // Ajusta la ruta según tu proyecto.
+
 
 
 @NgModule({
@@ -37,7 +39,9 @@ import { SortMenuComponent } from './sort-menu/sort-menu.component';
     DessertRecipesComponent,
     AddItemComponent,
     FavoritesComponent,
-    SortMenuComponent,  ], 
+    SortMenuComponent,
+    EditRecipeComponent, // Agrega el componente aquí
+      ], 
     
     imports: [BrowserModule, 
             IonicModule.forRoot(),
@@ -46,7 +50,10 @@ import { SortMenuComponent } from './sort-menu/sort-menu.component';
             FormsModule,
             AngularFireAuthModule,
             AngularFirestoreModule,
-            HttpClientModule,],
+            HttpClientModule,
+            IonicModule.forRoot(), // Importa IonicModule
+            ReactiveFormsModule,
+            ],
 
 
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }, 
@@ -54,7 +61,7 @@ import { SortMenuComponent } from './sort-menu/sort-menu.component';
               provideAuth(() => getAuth()),
               ],
               
-  bootstrap: [AppComponent],
+  bootstrap: [AppComponent, EditRecipeComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 

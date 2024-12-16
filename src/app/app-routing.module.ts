@@ -8,7 +8,7 @@ import { DinnerRecipesComponent } from './components/dinner-recipes/dinner-recip
 import { DessertRecipesComponent } from './components/dessert-recipes/dessert-recipes.component';
 import { AddItemComponent } from './components/add-item/add-item.component';
 import { FavoritesComponent } from './components/favorites/favorites.component';
-
+import { EditRecipeComponent } from './edit-recipe/edit-recipe.component';
 const routes: Routes = [
   {
     path: '',
@@ -46,6 +46,9 @@ const routes: Routes = [
   { path: '', redirectTo: '/add-item', pathMatch: 'full' },
   { path: 'favorites', component: FavoritesComponent },
   { path: '', redirectTo: '/favorites', pathMatch: 'full' },
+  { path: 'edit-recipe/:id', component: EditRecipeComponent },
+  
+
   {
     path: 'home',
     loadChildren: () => import('./home/home.module').then( m => m.HomePageModule)

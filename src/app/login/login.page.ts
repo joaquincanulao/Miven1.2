@@ -24,6 +24,9 @@ export class LoginPage {
 
   async onLogin() {
     try {
+      // Configura la persistencia de sesión antes de iniciar sesión
+      await this.afAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); // Persistencia local
+
       // Iniciar sesión con las credenciales
       await this.authService.loginUser(this.email, this.password);
       console.log('Inicio de sesión exitoso');
@@ -44,6 +47,7 @@ export class LoginPage {
   // Nuevo método para iniciar sesión con Google
   async onGoogleLogin() {
     try {
+      await this.afAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); // Persistencia local para Google
       await this.authService.loginWithGoogle();
       console.log('Inicio de sesión con Google exitoso');
     } catch (error) {

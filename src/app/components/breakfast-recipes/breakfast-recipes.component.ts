@@ -3,6 +3,8 @@ import { RecipeService } from '../../services/recipe.service';
 import { InventoryService } from '../../services/inventory.service'; 
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { Router } from '@angular/router';
+
 
 @Component({
   selector: 'app-breakfast-recipes',
@@ -24,7 +26,8 @@ export class BreakfastRecipesComponent implements OnInit {
     private recipeService: RecipeService, 
     private inventoryService: InventoryService,
     private auth: AngularFireAuth,
-    private firestore: AngularFirestore
+    private firestore: AngularFirestore,
+    private router: Router // Agregar el servicio Router
   ) {}
 
   ngOnInit(): void {
@@ -91,8 +94,8 @@ export class BreakfastRecipesComponent implements OnInit {
     if (this.userId) {
       this.inventoryService.getInventory(this.userId).subscribe(inventory => {
         this.availableIngredients = recipeIngredients.map(ingredient => {
-          const inventoryItem = inventory.find(
-            item => item.nombre.toLowerCase() === ingredient.nombre.toLowerCase()
+          const inventoryItem = inventory.find(item => 
+            item?.nombre?.toLowerCase() === ingredient?.nombre?.toLowerCase()
           );
           return {
             nombre: ingredient.nombre,
@@ -190,4 +193,9 @@ export class BreakfastRecipesComponent implements OnInit {
   isFavorite(recipeId: string): boolean {
     return this.favorites.some(fav => fav.recipeId === recipeId);
   }
+  navigateToEdit(recipeId: string) {
+    // Navegar a la página de edición de recetas
+    this.router.navigate(['/edit-recipe', recipeId]);
+  }
+  
 }

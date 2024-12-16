@@ -6,13 +6,13 @@ import firebase from 'firebase/compat/app';
 import { switchMap, map } from 'rxjs/operators';
 
 
-interface Ingredient {
+export interface Ingredient {
   nombre: string;
   cantidad: number;
   unidad: string;
 }
 
-interface Recipe {
+export interface Recipe {
   titulo: string;
   descripcion: string;
   categoria: string;
@@ -59,6 +59,8 @@ export class RecipeService {
   deleteRecipe(recipeId: string) {
     return this.firestore.collection('recetas').doc(recipeId).delete();
   }
+
+
 
   // Método para obtener comentarios con detalles de usuarios
   getRecipeCommentsWithUser(recipeId: string): Observable<any[]> {
@@ -136,4 +138,25 @@ export class RecipeService {
   getFavoriteRecipes(userId: string) {
     return this.firestore.collection('usuarios').doc(userId).collection('favoritos').valueChanges();
   }
+  getRecipeById(recipeId: string): Observable<Recipe> {
+    return this.firestore
+      .collection('recetas')
+      .doc<Recipe>(recipeId)
+      .valueChanges()
+      .pipe(
+        // Filtra valores undefined
+        map((recipe) => {
+          if (!recipe) {
+            throw new Error(`Receta con ID ${recipeId} no encontrada`);
+          }
+          return recipe;
+        })
+      );
+  }
+  
+
+  updateRecipe(recipeId: string, recipeData: Recipe): Promise<void> {
+    return this.firestore.collection('recetas').doc(recipeId).update(recipeData);
+  }
+
 }

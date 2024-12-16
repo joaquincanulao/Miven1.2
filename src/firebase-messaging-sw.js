@@ -1,5 +1,7 @@
 importScripts('https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compat.js');
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
 
 // Inicializar Firebase en el Service Worker
 firebase.initializeApp({
@@ -13,6 +15,8 @@ firebase.initializeApp({
         appId: "1:46504601832:web:ecc2f1c0f13346da7c415d",
       } 
 });
+
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 // Obtener instancia de Firebase Messaging
 const messaging = firebase.messaging();

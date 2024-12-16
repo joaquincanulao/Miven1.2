@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';  // Importar NavController
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
@@ -8,6 +8,8 @@ import { Platform } from '@ionic/angular';
 import { NotificationsPushService } from './services/notifications-push.service';
 import { Capacitor } from '@capacitor/core';
 import { MenuController } from '@ionic/angular';
+import { PushNotifications } from "@capacitor/push-notifications";
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -15,7 +17,7 @@ import { MenuController } from '@ionic/angular';
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   userId: string | null = null;
   public appPages: any = [
     { title: 'Inicio', url: '/home', icon: 'Home' },
@@ -40,11 +42,14 @@ export class AppComponent {
     private firestore: AngularFirestore,
     private platform: Platform,
     private notificationsPushService: NotificationsPushService,
-    private menuController: MenuController
+    private menuController: MenuController,
+    private afAuth: AngularFireAuth, private router: Router
   ) {
     this.initializeFCM();
     this.listenToMessages();
     this.init();
+    this.initializeNotifications();
+    
   }
   navigateToAlmuerzo() {
     this.navCtrl.navigateForward('/almuerzo');
@@ -69,6 +74,19 @@ init() {
   }
 
 }
+
+ngOnInit() {
+  this.afAuth.authState.subscribe((user) => {
+    if (user) {
+      console.log('Usuario autenticado:', user);
+      this.router.navigate(['/home']); // Cambia '/home' por la ruta de tu página principal
+    } else {
+      console.log('No hay usuario autenticado.');
+      this.router.navigate(['/login']); // Cambia '/login' por tu ruta de inicio de sesión
+    }
+  });
+}
+
 
   initializeApp() {
     this.platform.ready().then(() => {
@@ -144,6 +162,24 @@ init() {
 
   async closeMenu() {
     await this.menuController.close();
+  }
+
+  initializeNotifications() {
+    PushNotifications.requestPermissions().then((permission) => {
+      if (permission.receive === "granted") {
+        PushNotifications.register();
+      }
+    });
+
+    // Escucha notificaciones recibidas
+    PushNotifications.addListener("pushNotificationReceived", (notification) => {
+      console.log("Notificación recibida:", notification);
+    });
+
+    // Escucha acciones de notificaciones
+    PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
+      console.log("Acción de notificación realizada:", action);
+    });
   }
 
 }

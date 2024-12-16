@@ -1,0 +1,17 @@
+.delete-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: none;
+    border: none;
+    color: red;
+    font-size: 10px;
+    cursor: pointer;
+    padding: 0;
+
+      /* Opcional: agregar un hover para mejorar la experiencia */
+  &:hover {
+    color: darkred;
+    transform: scale(1);
+  }
+}  
