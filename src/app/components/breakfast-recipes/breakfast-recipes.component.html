@@ -38,9 +38,12 @@
           Editar
         </ion-button>
         
-        <ion-button fill="clear" (click)="addToFavorites(recipe.id, recipe.categoria)">
-          <ion-icon [name]="isFavorite(recipe.id) ? 'heart' : 'heart-outline'" [color]="isFavorite(recipe.id) ? 'danger' : 'medium'"></ion-icon>
-        </ion-button>      
+        <ion-button (click)="addToFavorites(recipe.id, recipe.categoria, recipe.creadorId)">
+          Agregar a Favoritos
+        </ion-button>
+      
+        <!-- Indicador si la receta ya está en favoritos -->
+        <span *ngIf="isFavorite(recipe.id)">✔ En favoritos</span>    
       </ion-card-content>
     </ion-card>
   </ion-list>

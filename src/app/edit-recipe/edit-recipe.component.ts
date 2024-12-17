@@ -28,8 +28,11 @@ export class EditRecipeComponent implements OnInit {
 
   ngOnInit(): void {
     this.recipeId = this.route.snapshot.paramMap.get('id');
+    console.log('Recibiendo ID desde la ruta:', this.recipeId);
     if (this.recipeId) {
       this.loadRecipe();
+    } else {
+      console.error('No se recibió ningún ID válido.');
     }
   }
 
