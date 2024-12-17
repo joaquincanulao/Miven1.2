@@ -84,12 +84,23 @@ export class FavoritesComponent implements OnInit {
   }
 }
 
+<<<<<<< HEAD
   // Método para abrir el modal de detalles de la receta
   openRecipeModal(recipe: any) {
     this.selectedRecipe = recipe;
     this.checkIngredientsAvailability(recipe.ingredientes);
     this.isModalOpen = true;
   }
+=======
+openRecipeModal(recipe: any) {
+  this.selectedRecipe = recipe;
+  this.checkIngredientsAvailability(recipe.ingredientes);
+  this.recipeService.getRecipeCommentsWithUser(recipe.id).subscribe((comments: any[]) => {
+    this.selectedRecipe.comentarios = comments;
+  });
+  this.isModalOpen = true;
+}
+>>>>>>> cfa17b8e4 (favorite)
 
   // Método para cerrar el modal
   closeModal() {
@@ -139,6 +150,7 @@ export class FavoritesComponent implements OnInit {
       /* */
   }
 
+<<<<<<< HEAD
   checkIngredientsAvailability(recipeIngredients: string[]) {
     if (this.userId) {
       this.inventoryService.getInventory(this.userId).subscribe(inventory => {
@@ -146,6 +158,20 @@ export class FavoritesComponent implements OnInit {
           return {
             name: ingredient,
             inInventory: inventory.some(item => item.nombre.toLowerCase() === ingredient.toLowerCase())
+=======
+  checkIngredientsAvailability(recipeIngredients: { nombre: string; cantidad: number; unidad: string }[]) {
+    if (this.userId) {
+      this.inventoryService.getInventory(this.userId).subscribe(inventory => {
+        this.availableIngredients = recipeIngredients.map(ingredient => {
+          const inventoryItem = inventory.find(item => 
+            item?.nombre?.toLowerCase() === ingredient?.nombre?.toLowerCase()
+          );
+          return {
+            nombre: ingredient.nombre,
+            cantidad: ingredient.cantidad,
+            unidad: ingredient.unidad,
+            disponible: inventoryItem ? inventoryItem.cantidad >= ingredient.cantidad : false
+>>>>>>> cfa17b8e4 (favorite)
           };
         });
       });
