@@ -76,13 +76,6 @@
 
           <!-- Descripción completa -->
 
-          <!-- Ingredientes -->
-        <ion-item *ngFor="let ingredient of availableIngredients">
-          {{ ingredient.name }}
-          <ion-icon *ngIf="ingredient.inInventory" name="checkmark-circle" color="success"></ion-icon>
-          <ion-icon *ngIf="!ingredient.inInventory" name="close-circle" color="danger"></ion-icon>
-        </ion-item>
-
           <ion-item *ngFor="let ing of availableIngredients">
             <ion-label>
               {{ ing.nombre }} - {{ ing.cantidad }} {{ ing.unidad }}
