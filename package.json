@@ -34,10 +34,7 @@
     "@capacitor/push-notifications": "^6.0.3",
     "@capacitor/status-bar": "6.0.0",
     "@ionic/angular": "^8.0.0",
-<<<<<<< HEAD
-=======
     "angular": "^1.8.3",
->>>>>>> cfa17b8e4 (favorite)
     "cordova-plugin-firebase-messaging": "^8.0.1",
     "cordova-support-android-plugin": "^2.0.4",
     "firebase": "^10.14.1",

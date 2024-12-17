@@ -9,6 +9,7 @@ import { InventoryService } from '../../services/inventory.service';
   templateUrl: './favorites.component.html',
   styleUrls: ['./favorites.component.scss'],
 })
+
 export class FavoritesComponent implements OnInit {
   userId: string | null = null;
   favorites: any[] = []; // Aquí se almacenan todas las recetas favoritas
@@ -28,7 +29,6 @@ export class FavoritesComponent implements OnInit {
     console.log(' en cosntruct')
 
   }
-
      ngOnInit(): void {
        this.auth.authState.subscribe(user => {
          this.isAuthenticated = !!user;
@@ -84,14 +84,6 @@ export class FavoritesComponent implements OnInit {
   }
 }
 
-<<<<<<< HEAD
-  // Método para abrir el modal de detalles de la receta
-  openRecipeModal(recipe: any) {
-    this.selectedRecipe = recipe;
-    this.checkIngredientsAvailability(recipe.ingredientes);
-    this.isModalOpen = true;
-  }
-=======
 openRecipeModal(recipe: any) {
   this.selectedRecipe = recipe;
   this.checkIngredientsAvailability(recipe.ingredientes);
@@ -100,7 +92,6 @@ openRecipeModal(recipe: any) {
   });
   this.isModalOpen = true;
 }
->>>>>>> cfa17b8e4 (favorite)
 
   // Método para cerrar el modal
   closeModal() {
@@ -149,16 +140,6 @@ openRecipeModal(recipe: any) {
       });
       /* */
   }
-
-<<<<<<< HEAD
-  checkIngredientsAvailability(recipeIngredients: string[]) {
-    if (this.userId) {
-      this.inventoryService.getInventory(this.userId).subscribe(inventory => {
-        this.availableIngredients = recipeIngredients.map(ingredient => {
-          return {
-            name: ingredient,
-            inInventory: inventory.some(item => item.nombre.toLowerCase() === ingredient.toLowerCase())
-=======
   checkIngredientsAvailability(recipeIngredients: { nombre: string; cantidad: number; unidad: string }[]) {
     if (this.userId) {
       this.inventoryService.getInventory(this.userId).subscribe(inventory => {
@@ -171,7 +152,7 @@ openRecipeModal(recipe: any) {
             cantidad: ingredient.cantidad,
             unidad: ingredient.unidad,
             disponible: inventoryItem ? inventoryItem.cantidad >= ingredient.cantidad : false
->>>>>>> cfa17b8e4 (favorite)
+
           };
         });
       });
@@ -183,5 +164,4 @@ openRecipeModal(recipe: any) {
   isFavorite(recipeId: string): boolean {
     return this.favorites.some(fav => fav.recipeId === recipeId);
   }
-
 }
