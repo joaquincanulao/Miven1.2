@@ -1,13 +1,5 @@
 @angular/common
 MIT
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-@angular/core
-MIT
-=======
-=======
->>>>>>> cfa17b8e4 (favorite)
 The MIT License
 
 Copyright (c) 2010-2024 Google LLC. https://angular.dev/license
@@ -55,27 +47,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
-<<<<<<< HEAD
->>>>>>> 7cb31df57 (se integro la edicion de las recetas)
-=======
->>>>>>> cfa17b8e4 (favorite)
 
 @angular/fire
 MIT
 
 @angular/forms
 MIT
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-@angular/platform-browser
-MIT
-
-@angular/router
-MIT
-=======
-=======
->>>>>>> cfa17b8e4 (favorite)
 The MIT License
 
 Copyright (c) 2010-2024 Google LLC. https://angular.dev/license
@@ -148,10 +125,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
-<<<<<<< HEAD
->>>>>>> 7cb31df57 (se integro la edicion de las recetas)
-=======
->>>>>>> cfa17b8e4 (favorite)
 
 @babel/runtime
 MIT

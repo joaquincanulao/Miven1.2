@@ -1,6 +1,6 @@
 {
     "name": "functions",
-    "scripts": {
+       "scripts": {
         "lint": "eslint . --ext .ts,.js",
         "build": "tsc",
         "serve": "firebase emulators:start",
