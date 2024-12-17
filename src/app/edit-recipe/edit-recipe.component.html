@@ -1,0 +1,49 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Editar Receta</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="recipeForm" (ngSubmit)="submitForm()">
+    <ion-item>
+      <ion-label position="floating">Título</ion-label>
+      <ion-input formControlName="titulo"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Descripción</ion-label>
+      <ion-textarea formControlName="descripcion"></ion-textarea>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Categoría</ion-label>
+      <ion-select formControlName="categoria">
+        <ion-select-option value="desayuno">Desayuno</ion-select-option>
+        <ion-select-option value="almuerzo">Almuerzo</ion-select-option>
+        <ion-select-option value="cena">Cena</ion-select-option>
+        <ion-select-option value="postre">Postre</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <div formArrayName="ingredientes">
+      <div *ngFor="let ingredient of ingredientes.controls; let i = index" [formGroupName]="i">
+        <ion-item>
+          <ion-label position="floating">Nombre</ion-label>
+          <ion-input formControlName="nombre"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="floating">Cantidad</ion-label>
+          <ion-input type="number" formControlName="cantidad"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="floating">Unidad</ion-label>
+          <ion-input formControlName="unidad"></ion-input>
+        </ion-item>
+        <ion-button expand="block" color="danger" (click)="removeIngredient(i)">Eliminar Ingrediente</ion-button>
+      </div>
+    </div>
+    <ion-button expand="block" (click)="addIngredient()">Agregar Ingrediente</ion-button>
+    <ion-button expand="block" type="submit">Guardar Cambios</ion-button>
+  </form>
+</ion-content>
