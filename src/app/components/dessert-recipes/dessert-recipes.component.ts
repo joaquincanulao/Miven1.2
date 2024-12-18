@@ -4,7 +4,9 @@ import { InventoryService } from '../../services/inventory.service';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Router } from '@angular/router';
+import { UnitConversionService } from '../../shared/services/unit-conversion.service';
 
+type Unidad = 'gramos' | 'ml' | 'tazas' | 'onzas';
 
 @Component({
   selector: 'app-dessert-recipes',
@@ -27,7 +29,9 @@ export class DessertRecipesComponent implements OnInit {
     private inventoryService: InventoryService,
     private auth: AngularFireAuth,
     private firestore: AngularFirestore,
-    private router: Router // Agregar el servicio Router
+    private router: Router, // Agregar el servicio Router
+    private unitConversionService: UnitConversionService,
+    
   ) {}
 
   ngOnInit(): void {
@@ -90,22 +94,88 @@ export class DessertRecipesComponent implements OnInit {
 
   // Verificar la disponibilidad de los ingredientes en el inventario
   checkIngredientsAvailability(recipeIngredients: { nombre: string; cantidad: number; unidad: string }[]) {
+    const validUnits: Unidad[] = ['gramos', 'ml', 'tazas', 'onzas'];
+
     if (this.userId) {
       this.inventoryService.getInventory(this.userId).subscribe(inventory => {
         this.availableIngredients = recipeIngredients.map(ingredient => {
-          const inventoryItem = inventory.find(item => 
+          const inventoryItem = inventory.find(item =>
             item?.nombre?.toLowerCase() === ingredient?.nombre?.toLowerCase()
           );
-          return {
-            nombre: ingredient.nombre,
-            cantidad: ingredient.cantidad,
-            unidad: ingredient.unidad,
-            disponible: inventoryItem ? inventoryItem.cantidad >= ingredient.cantidad : false
-          };
+
+          if (inventoryItem) {
+            try {
+              const normalizedIngredientUnit = this.normalizeUnit(ingredient.unidad);
+              const normalizedInventoryUnit = this.normalizeUnit(inventoryItem.unidadMedida);
+
+              console.log(
+                `Normalizando unidades: Ingrediente (${ingredient.unidad}) -> ${normalizedIngredientUnit}, Inventario (${inventoryItem.unidadMedida}) -> ${normalizedInventoryUnit}`
+              );
+
+              if (!validUnits.includes(normalizedIngredientUnit) || !validUnits.includes(normalizedInventoryUnit)) {
+                throw new Error(`Unidad no válida: ${ingredient.unidad} o ${inventoryItem.unidadMedida}`);
+              }
+
+              // Usar UnitConversionService para convertir las unidades
+              const cantidadConvertida = this.unitConversionService.convertirUnidad(
+                ingredient.cantidad,
+                normalizedIngredientUnit,
+                normalizedInventoryUnit
+              );
+
+              console.log(
+                `Convirtiendo: ${ingredient.cantidad} ${normalizedIngredientUnit} a ${normalizedInventoryUnit}, Resultado: ${cantidadConvertida}`
+              );
+
+              console.log(
+                `Verificando cantidad: Inventario (${inventoryItem.cantidad} ${inventoryItem.unidadMedida}), Necesario (${cantidadConvertida} ${inventoryItem.unidadMedida})`
+              );
+
+              const disponible = inventoryItem.cantidad >= cantidadConvertida;
+
+              return {
+                nombre: ingredient.nombre,
+                cantidad: ingredient.cantidad,
+                unidad: ingredient.unidad,
+                disponible
+              };
+            } catch (error) {
+              console.error(`Error al convertir ${ingredient.nombre}:`, error);
+              return {
+                nombre: ingredient.nombre,
+                cantidad: ingredient.cantidad,
+                unidad: ingredient.unidad,
+                disponible: false
+              };
+            }
+          } else {
+            return {
+              nombre: ingredient.nombre,
+              cantidad: ingredient.cantidad,
+              unidad: ingredient.unidad,
+              disponible: false
+            };
+          }
         });
       });
     }
   }
+
+  normalizeUnit(unit: string): Unidad {
+    switch (unit.toLowerCase()) {
+      case 'ml':
+        return 'ml';
+      case 'tazas':
+        return 'tazas';
+      case 'onzas':
+        return 'onzas';
+      case 'gramos':
+        return 'gramos';
+      default:
+        throw new Error(`Unidad no válida: ${unit}`);
+    }
+  }
+
 
   rateRecipe(rating: number) {
     this.newRating = rating; 

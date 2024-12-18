@@ -4,6 +4,9 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http'; // Para hacer solicitudes HTTP
+import { conversionTable } from '../shared/constants/unit-conversion';
+
+type Unidad = 'gramos' | 'ml' | 'tazas' | 'onzas';
 
 interface InventoryItem {
   nombre: string;
@@ -16,8 +19,41 @@ interface InventoryItem {
   providedIn: 'root'
 })
 export class InventoryService {
+  private conversionTable: Record<Unidad, Record<Unidad, number>> = {
+    gramos: {
+      gramos: 1,
+      ml: 0, // Conversión no aplicable
+      tazas: 128,
+      onzas: 28.35,
+    },
+    ml: {
+      gramos: 0, // Conversión no aplicable
+      ml: 1,
+      tazas: 240,
+      onzas: 29.5735,
+    },
+    tazas: {
+      gramos: 1 / 128,
+      ml: 1 / 240,
+      tazas: 1,
+      onzas: 8,
+    },
+    onzas: {
+      gramos: 1 / 28.35,
+      ml: 1 / 29.5735,
+      tazas: 1 / 8,
+      onzas: 1,
+    },
+  };
+  
   private fcmServerKey = 'BOV3uao1z47YpCi69vF5IMWazjO2ciGDGuLi_7DRcvKi4WinbLI2Hv2hScOCJtfiTpdQ9Yu6bK9n-fRTXN5S5Gc';
-  constructor(private firestore: AngularFirestore, private auth: AngularFireAuth, private http: HttpClient) {}
+  
+  
+  
+  
+  constructor(private firestore: AngularFirestore, 
+              private auth: AngularFireAuth, 
+              private http: HttpClient) {}
 
   // Método para obtener el inventario del usuario
   getInventory(userId: string): Observable<any[]> {
@@ -112,4 +148,45 @@ export class InventoryService {
         }
       });
     }
-}
+
+    convertirUnidad(cantidad: number, unidadOrigen: Unidad, unidadDestino: Unidad): number {
+      if (unidadOrigen === unidadDestino) return cantidad;
+    
+      const conversionFactor = this.conversionTable[unidadOrigen]?.[unidadDestino];
+      if (!conversionFactor) {
+        throw new Error(`No se puede convertir de ${unidadOrigen} a ${unidadDestino}`);
+      }
+    
+      return cantidad * conversionFactor;
+    }
+  
+    verificarIngredienteEnInventario(
+      userId: string,
+      ingrediente: { nombre: string; cantidad: number; unidad: Unidad }
+    ): Observable<boolean> {
+      return this.getInventory(userId).pipe(
+        map((inventario) => {
+          const itemInventario = inventario.find(
+            (item) => item.nombre.toLowerCase() === ingrediente.nombre.toLowerCase()
+          );
+  
+          if (!itemInventario) {
+            return false; // El ingrediente no está en el inventario
+          }
+  
+          try {
+            const cantidadConvertida = this.convertirUnidad(
+              ingrediente.cantidad,
+              ingrediente.unidad,
+              itemInventario.unidadMedida as Unidad
+            );
+  
+            return itemInventario.cantidad >= cantidadConvertida;
+          } catch (error) {
+            console.error(`Error al convertir ${ingrediente.nombre}:`, error);
+            return false;
+          }
+        })
+      );
+    }
+  }

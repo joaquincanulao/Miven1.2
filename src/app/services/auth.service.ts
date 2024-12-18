@@ -50,15 +50,6 @@ export class AuthService {
 
         // Crear una subcolección de inventario para el usuario recién registrado
         const inventarioRef = this.firestore.collection('usuarios').doc(user.uid).collection('inventario');
-
-        // Inicializar el inventario con algunos productos predeterminados o vacío
-        await inventarioRef.add({
-          nombre_producto: 'Producto Ejemplo',
-          cantidad: 0,
-          unidad_medida: 'unidades',
-          fecha_caducidad: new Date(),
-          categoria: 'General',
-        });
       }
 
       this.router.navigate(['./login']);
@@ -110,13 +101,6 @@ async loginWithGoogle() {
 
         // Inicializar inventario para el nuevo usuario
         const inventarioRef = userDocRef.collection('inventario');
-        await inventarioRef.add({
-          nombre_producto: 'Producto Ejemplo',
-          cantidad: 0,
-          unidad_medida: 'unidades',
-          fecha_caducidad: new Date(),
-          categoria: 'General',
-        });
       }
 
       // Registrar el token FCM

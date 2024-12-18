@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { RecipeService } from '../../services/recipe.service';
-import { InventoryService } from '../../services/inventory.service'; 
+import { InventoryService } from '../../services/inventory.service';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Router } from '@angular/router';
+
+type Unidad = 'gramos' | 'ml' | 'tazas' | 'onzas';
 
 @Component({
   selector: 'app-breakfast-recipes',
@@ -22,11 +24,11 @@ export class BreakfastRecipesComponent implements OnInit {
   favorites: any[] = [];
 
   constructor(
-    private recipeService: RecipeService, 
+    private recipeService: RecipeService,
     private inventoryService: InventoryService,
     private auth: AngularFireAuth,
     private firestore: AngularFirestore,
-    private router: Router // Agregar el servicio Router
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -44,14 +46,13 @@ export class BreakfastRecipesComponent implements OnInit {
       this.breakfastRecipes = recipes;
       this.filteredBreakfastRecipes = recipes;
 
-      const ratingPromises = this.breakfastRecipes.map(recipe => 
+      const ratingPromises = this.breakfastRecipes.map(recipe =>
         this.loadRecipeRatings(recipe.id).then(averageRating => {
           recipe.averageRating = averageRating;
         })
       );
 
       Promise.all(ratingPromises).then(() => {
-        // Ordenar recetas por calificación promedio
         this.sortRecipesByRating();
       });
     });
@@ -59,7 +60,7 @@ export class BreakfastRecipesComponent implements OnInit {
 
   sortRecipesByRating() {
     this.filteredBreakfastRecipes.sort((a, b) => {
-      return (b.averageRating || 0) - (a.averageRating || 0); 
+      return (b.averageRating || 0) - (a.averageRating || 0);
     });
   }
 
@@ -90,57 +91,98 @@ export class BreakfastRecipesComponent implements OnInit {
 
   // Verificar la disponibilidad de los ingredientes en el inventario
   checkIngredientsAvailability(recipeIngredients: { nombre: string; cantidad: number; unidad: string }[]) {
+    const validUnits: Unidad[] = ['gramos', 'ml', 'tazas', 'onzas'];
+
     if (this.userId) {
       this.inventoryService.getInventory(this.userId).subscribe(inventory => {
         this.availableIngredients = recipeIngredients.map(ingredient => {
-          const inventoryItem = inventory.find(item => 
+          const inventoryItem = inventory.find(item =>
             item?.nombre?.toLowerCase() === ingredient?.nombre?.toLowerCase()
           );
-          return {
-            nombre: ingredient.nombre,
-            cantidad: ingredient.cantidad,
-            unidad: ingredient.unidad,
-            disponible: inventoryItem ? inventoryItem.cantidad >= ingredient.cantidad : false
-          };
+
+          if (inventoryItem) {
+            try {
+              // Validar las unidades antes de convertir
+              if (
+                !validUnits.includes(ingredient.unidad as Unidad) ||
+                !validUnits.includes(inventoryItem.unidadMedida as Unidad)
+              ) {
+                throw new Error(
+                  `Unidad no válida: ${ingredient.unidad} o ${inventoryItem.unidadMedida}`
+                );
+              }
+
+              // Convertir la cantidad de la receta a la unidad del inventario
+              const cantidadConvertida = this.inventoryService.convertirUnidad(
+                ingredient.cantidad,
+                ingredient.unidad as Unidad,
+                inventoryItem.unidadMedida as Unidad
+              );
+
+              return {
+                nombre: ingredient.nombre,
+                cantidad: ingredient.cantidad,
+                unidad: ingredient.unidad,
+                disponible: inventoryItem.cantidad >= cantidadConvertida
+              };
+            } catch (error) {
+              console.error(`Error al convertir ${ingredient.nombre}:`, error);
+              return {
+                nombre: ingredient.nombre,
+                cantidad: ingredient.cantidad,
+                unidad: ingredient.unidad,
+                disponible: false
+              };
+            }
+          } else {
+            return {
+              nombre: ingredient.nombre,
+              cantidad: ingredient.cantidad,
+              unidad: ingredient.unidad,
+              disponible: false
+            };
+          }
         });
       });
     }
   }
 
   rateRecipe(rating: number) {
-    this.newRating = rating; 
+    this.newRating = rating;
   }
 
   submitComment() {
     if (this.selectedRecipe && this.userId && this.newComment.trim()) {
-      this.recipeService.addCommentWithRating(
-        this.selectedRecipe.id, 
-        this.userId, 
-        this.newRating, 
-        this.newComment
-      ).then(() => {
-        console.log('Comentario y calificación enviados');
-        this.newComment = '';
-        this.newRating = 1;
-        this.closeModal();
-      }).catch(error => {
-        console.error('Error al enviar el comentario:', error);
-      });
+      this.recipeService
+        .addCommentWithRating(this.selectedRecipe.id, this.userId, this.newRating, this.newComment)
+        .then(() => {
+          console.log('Comentario y calificación enviados');
+          this.newComment = '';
+          this.newRating = 1;
+          this.closeModal();
+        })
+        .catch(error => {
+          console.error('Error al enviar el comentario:', error);
+        });
     } else {
       console.error('Faltan datos para enviar el comentario o el usuario no está autenticado');
     }
   }
 
   loadRecipeRatings(recipeId: string): Promise<number> {
-    return new Promise((resolve) => {
-      this.firestore.collection('recetas').doc(recipeId).collection('comentarios')
-        .valueChanges().subscribe((comments: any[]) => {
+    return new Promise(resolve => {
+      this.firestore
+        .collection('recetas')
+        .doc(recipeId)
+        .collection('comentarios')
+        .valueChanges()
+        .subscribe((comments: any[]) => {
           if (comments.length > 0) {
             const totalRating = comments.reduce((acc, comment) => acc + comment.rating, 0);
             const averageRating = totalRating / comments.length;
             resolve(averageRating);
           } else {
-            resolve(0); // Sin calificaciones
+            resolve(0);
           }
         });
     });
@@ -148,12 +190,15 @@ export class BreakfastRecipesComponent implements OnInit {
 
   deleteRecipe(recipeId: string) {
     if (confirm('¿Estás seguro de que deseas eliminar esta receta?')) {
-      this.recipeService.deleteRecipe(recipeId).then(() => {
-        console.log('Receta eliminada con éxito');
-        this.loadBreakfastRecipes();
-      }).catch(error => {
-        console.error('Error al eliminar la receta:', error);
-      });
+      this.recipeService
+        .deleteRecipe(recipeId)
+        .then(() => {
+          console.log('Receta eliminada con éxito');
+          this.loadBreakfastRecipes();
+        })
+        .catch(error => {
+          console.error('Error al eliminar la receta:', error);
+        });
     }
   }
 
@@ -172,9 +217,9 @@ export class BreakfastRecipesComponent implements OnInit {
   addToFavorites(recipeId: string, category: string, creadorId: string) {
     if (this.userId) {
       const favoriteRecipe = {
-        recipeId: recipeId, // Verifica que sea el ID correcto
-        category: category,
-        creadorId: creadorId,
+        recipeId,
+        category,
+        creadorId,
         userId: this.userId,
         dateAdded: new Date()
       };
@@ -193,7 +238,6 @@ export class BreakfastRecipesComponent implements OnInit {
   }
 
   navigateToEdit(recipeId: string) {
-    // Navegar a la página de edición de recetas
     this.router.navigate(['/edit-recipe', recipeId]);
   }
 }

@@ -8,33 +8,34 @@
 </ion-header>
 
 <ion-content>
-  <ion-list>
+  <ion-list style="padding: 1rem;">
     <!-- Título de la receta -->
-    <ion-item>
-      <ion-label position="stacked">Título</ion-label>
-      <ion-input [(ngModel)]="titulo"></ion-input>
+    <ion-item lines="full">
+      <ion-label position="stacked" style="font-weight: bold;">Título</ion-label>
+      <ion-input [(ngModel)]="titulo" placeholder="Ejemplo: Ensalada César"></ion-input>
     </ion-item>
 
     <!-- Subir imagen -->
-    <ion-item>
-      <input type="file" (change)="onFileSelected($event)" accept="image/*">
+    <ion-item lines="none">
+      <ion-label position="stacked" style="font-weight: bold; margin-bottom: 0.5rem;">Subir Imagen</ion-label>
+      <input type="file" (change)="onFileSelected($event)" accept="image/*" style="width: 100%; padding: 0.5rem;">
     </ion-item>
 
     <!-- Vista previa de la imagen -->
-    <ion-item *ngIf="imagePreview">
-      <img [src]="imagePreview" alt="Vista previa de la imagen" style="width: 100%; max-height: 200px;">
+    <ion-item *ngIf="imagePreview" lines="none" style="text-align: center;">
+      <img [src]="imagePreview" alt="Vista previa de la imagen" style="width: 100%; max-height: 200px; border-radius: 8px; margin-top: 1rem;">
     </ion-item>
 
     <!-- Descripción de la receta -->
-    <ion-item>
-      <ion-label position="stacked">Descripción</ion-label>
-      <ion-textarea [(ngModel)]="descripcion"></ion-textarea>
+    <ion-item lines="full">
+      <ion-label position="stacked" style="font-weight: bold;">Descripción</ion-label>
+      <ion-textarea [(ngModel)]="descripcion" placeholder="Ejemplo: Deliciosa ensalada con aderezo casero" auto-grow></ion-textarea>
     </ion-item>
 
     <!-- Categoría de la receta -->
-    <ion-item>
-      <ion-label>Categoría</ion-label>
-      <ion-select [(ngModel)]="categoria">
+    <ion-item lines="full">
+      <ion-label style="font-weight: bold;">Categoría</ion-label>
+      <ion-select [(ngModel)]="categoria" placeholder="Seleccionar categoría">
         <ion-select-option value="desayuno">Desayuno</ion-select-option>
         <ion-select-option value="almuerzo">Almuerzo</ion-select-option>
         <ion-select-option value="cena">Cena</ion-select-option>
@@ -43,41 +44,48 @@
     </ion-item>
 
     <!-- Seleccionar un ingrediente predeterminado -->
-    <ion-item>
-      <ion-label>Seleccionar Ingrediente</ion-label>
-      <ion-select [(ngModel)]="ingrediente">
+    <ion-item lines="full">
+      <ion-label style="font-weight: bold;">Seleccionar Ingrediente</ion-label>
+      <ion-select [(ngModel)]="ingrediente" placeholder="Seleccionar ingrediente">
         <ion-select-option *ngFor="let item of globalItems" [value]="item.nombre">{{ item.nombre }}</ion-select-option>
       </ion-select>
     </ion-item>
 
     <!-- Campos para ingresar la cantidad y la unidad del ingrediente -->
-    <ion-item>
-      <ion-label position="stacked">Cantidad</ion-label>
-      <ion-input type="number" [(ngModel)]="cantidadIngrediente"></ion-input>
+    <ion-item lines="full">
+      <ion-label position="stacked" style="font-weight: bold;">Cantidad</ion-label>
+      <ion-input type="number" [(ngModel)]="cantidadIngrediente" placeholder="Ejemplo: 100"></ion-input>
     </ion-item>
 
-    <ion-item>
-      <ion-label>Unidad</ion-label>
-      <ion-select [(ngModel)]="unidadIngrediente">
+    <ion-item lines="full">
+      <ion-label style="font-weight: bold;">Unidad</ion-label>
+      <ion-select [(ngModel)]="unidadIngrediente" placeholder="Seleccionar unidad">
         <ion-select-option value="gramos">Gramos</ion-select-option>
-        <ion-select-option value="ml">Mililitros</ion-select-option>
+        <ion-select-option value="ml">ml</ion-select-option>
         <ion-select-option value="unidad">Unidad</ion-select-option>
+        <ion-select-option value="onzas">onzas</ion-select-option>
+        <ion-select-option value="tazas">tazas</ion-select-option>
+
       </ion-select>
     </ion-item>
 
     <!-- Botón para añadir el ingrediente -->
-    <ion-item>
-      <ion-button (click)="addIngredient()">Añadir Ingrediente</ion-button>
+    <ion-item lines="none" style="justify-content: center;">
+      <ion-button (click)="addIngredient()" expand="block" color="primary" style="margin: 1rem 0;">Añadir Ingrediente</ion-button>
     </ion-item>
 
     <!-- Lista de ingredientes añadidos -->
     <ion-list>
-      <ion-item *ngFor="let ing of ingredientes">
-        {{ ing.nombre }} - {{ ing.cantidad }} {{ ing.unidad }}
+      <ion-item *ngFor="let ing of ingredientes" lines="none" style="font-size: 0.9rem;">
+        <ion-label>
+          {{ ing.nombre }} - {{ ing.cantidad }} {{ ing.unidad }}
+        </ion-label>
       </ion-item>
     </ion-list>
 
     <!-- Botón para guardar la receta -->
-    <ion-button expand="full" (click)="addRecipe()">Agregar Receta</ion-button>
+    <ion-item lines="none" style="justify-content: center;">
+      <ion-button (click)="addRecipe()" expand="block" color="success" style="margin-top: 1rem;">Agregar Receta</ion-button>
+    </ion-item>
   </ion-list>
 </ion-content>
